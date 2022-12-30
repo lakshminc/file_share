@@ -29,8 +29,8 @@ public class ProcedureCodeProcessorService {
     public static final String EFF_END_DATE_FORMAT = "yyyy-MM-dd";
     public static final String INFINITE_DATE = "9999-12-31";
     public static final int DATA_ELEMENT_SIZE = 8;
-    public static final int EFF_DATE_POSITION = 7;
-    public static final int END_DATE_POSITION = 8;
+    public static final int EFF_DATE_POSITION = 8;
+    public static final int END_DATE_POSITION = 9;
 
     private static final String expectedHeader = "GEOGRAPHY ID|PROCEDURE CODE|PROCEDURE CODE DESCRIPTION|MODIFIER|ACTUAL/DERIVED INDICATOR|GEOGRAPHIC LEVEL|GEOGRAPHIC DESCRIPTION|REFERENCE AMOUNT";
     @Autowired
@@ -94,8 +94,8 @@ public class ProcedureCodeProcessorService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(EFF_END_DATE_FORMAT);
         LocalDate today = LocalDate.now();
         LocalDate infiniteDate = LocalDate.parse(INFINITE_DATE, formatter);
-
         List<ProcedureCodeData> inputProcCodeRecords = lines.stream()
+
                 .map(dataLine -> dataLine.split("[|]")).map(dataElements -> {
                             if (dataElements.length < DATA_ELEMENT_SIZE) {
                                 throw new BadInputDataException("One or more elements are missing in proc code data");
@@ -112,11 +112,11 @@ public class ProcedureCodeProcessorService {
                                         .effectiveDate(null)
                                         .endDate(null).build();
 
-                                if (lines.size() > EFF_DATE_POSITION) {
+                                if (dataElements.length > EFF_DATE_POSITION) {
                                     LocalDate effDate = LocalDate.parse(dataElements[EFF_DATE_POSITION + 1], formatter);
                                     inputProcCodeRecord.setEffectiveDate(effDate);
                                 }
-                                if (lines.size() > END_DATE_POSITION) {
+                                if (dataElements.length > END_DATE_POSITION) {
                                     LocalDate endDate = LocalDate.parse(dataElements[END_DATE_POSITION + 1], formatter);
                                     inputProcCodeRecord.setEndDate(endDate);
                                 }
@@ -170,7 +170,6 @@ public class ProcedureCodeProcessorService {
                         .endDate(procedureCodeRecordFromDB.getEndDate()).build();
 
                 // update existing amount from input record and end date to today's date
-                outputProcCodeRecordFromDB.setReferenceAmount(dataFromFile.getReferenceAmount());
                 outputProcCodeRecordFromDB.setEndDate(today);
 
                 // update dates for input record, effective data s today and end date as infinite date
