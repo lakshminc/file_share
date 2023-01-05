@@ -16,7 +16,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "PROCEDURE_CODES")
+@Table(name = "FAC_MSA")
 public class ProcedureCodeData {
     Integer geographyId;
     @Id
@@ -38,14 +38,14 @@ public class ProcedureCodeData {
 
     public String content() {
         return geographyId +
-                " " + procedureCode +
-                " " + procedureCodeDescription +
-                " " + modifier +
-                " " + actualDerivedIndicator +
-                " " + geographicLevel +
-                " " + geographicDescription +
-                " " + referenceAmount +
-                " " + effectiveDate +
-                " " + endDate;
+                "," + procedureCode +
+                "," + procedureCodeDescription +
+                "," + modifier +
+                "," + actualDerivedIndicator +
+                "," + geographicLevel +
+                "," + geographicDescription +
+                "," + referenceAmount +
+                "," + effectiveDate +
+                "," + endDate;
     }
 }

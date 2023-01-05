@@ -1,2 +1,3 @@
+/*
 INSERT INTO PROCEDURE_CODES (geography_id, proc_code, proc_code_desc, modifier, actual_derived_ind, geographic_level, geographic_desc, reference_amount, eff_dt, end_dt) VALUES (1, 10004, 'FINE NEEDLE ASPIRATION BX W/O IMG GDN EA ADDL','  ','Derived','Census Division','South Atlantic',1403.88, '2022-01-02','2999-12-31');
-INSERT INTO PROCEDURE_CODES (geography_id, proc_code, proc_code_desc, modifier, actual_derived_ind, geographic_level, geographic_desc, reference_amount, eff_dt, end_dt) VALUES (7, 84466, 'THYROID HORM UPTK/THYROID HORMONE BINDING RATIO','  ','Derived','MSA','San Juan-Bayamon-Caguas PR',1813.45, '2022-01-02','2999-12-31');
+INSERT INTO PROCEDURE_CODES (geography_id, proc_code, proc_code_desc, modifier, actual_derived_ind, geographic_level, geographic_desc, reference_amount, eff_dt, end_dt) VALUES (7, 84466, 'THYROID HORM UPTK/THYROID HORMONE BINDING RATIO','  ','Derived','MSA','San Juan-Bayamon-Caguas PR',1813.45, '2022-01-02','2999-12-31');*/

@@ -1,3 +1,4 @@
+/*
 CREATE TABLE PROCEDURE_CODES (
     geography_id INTEGER NOT NULL,
     proc_code INTEGER NOT NULL,
@@ -10,4 +11,4 @@ CREATE TABLE PROCEDURE_CODES (
     eff_dt date NOT NULL,
     end_dt date NOT NULL,
     PRIMARY KEY (geography_id)
-);
+);*/
