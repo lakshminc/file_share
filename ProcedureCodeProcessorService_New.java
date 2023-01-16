@@ -40,6 +40,8 @@ public class ProcedureCodeProcessorService {
 
     @Value("${output.file.location}")
     private String outputFileLocation;
+    @Value("${input.file.batch.size:999}")
+    private int batchSize;
 
     /**
      * Process the procedure data and generate the data file
@@ -58,7 +60,7 @@ public class ProcedureCodeProcessorService {
             throw new InputFileMissingException("Input file ( " + inputFileLocation + " ) doesn't exist");
         } else {
             try {
-                int batchSize = 5000;
+
                 // Delete old file
                 Path outputFilePath = Paths.get(outputFileLocation);
                 Files.deleteIfExists(outputFilePath);
@@ -88,6 +90,7 @@ public class ProcedureCodeProcessorService {
                             if (lines.size() == batchSize) {
                                 matchRecordsAndGenerateOutputData(lines, writer);
                                 lines = new ArrayList<>();
+                                continue;
                             }
                         }
                         matchRecordsAndGenerateOutputData(lines, writer);
@@ -184,18 +187,22 @@ public class ProcedureCodeProcessorService {
         List<Integer> inputProcCodes = inputProcCodeRecords.stream()
                 .map(inputProcCodeData -> inputProcCodeData.getProcedureCode())
                 .collect(Collectors.toList());
-
+        //System.out.println("inputProcCodes : " + inputProcCodes);
         // Get proc code data for given proc codes from database
         List<ProcedureCodeData> procCodesFromDb = repository.findByProcedureCodeIn(inputProcCodes);
-
+        System.out.println("Db count : " + procCodesFromDb.size());
         // Derive output proc code records from input and existing proc code records
         inputProcCodeRecords.stream().forEach(dataFromFile -> {
             // check if procedure code exists in database
-            Optional<ProcedureCodeData> procedureCodeRecordFromDBOpt = Optional.ofNullable(procCodesFromDb).orElseGet(Collections::emptyList).stream()
+            /*Optional<ProcedureCodeData> procedureCodeRecordFromDBOpt = Optional.ofNullable(procCodesFromDb).orElseGet(Collections::emptyList).stream()
                     .filter(dataFromDB -> (dataFromDB.getGeographyId().intValue() == dataFromFile.getGeographyId().intValue()
                             && dataFromDB.getProcedureCode().intValue() == dataFromFile.getProcedureCode().intValue()
                             && dataFromDB.getActualDerivedIndicator().equalsIgnoreCase(dataFromFile.getActualDerivedIndicator())
                             && dataFromDB.getGeographicLevel().equalsIgnoreCase(dataFromFile.getGeographicLevel())
+                    )).findAny();*/
+            Optional<ProcedureCodeData> procedureCodeRecordFromDBOpt = Optional.ofNullable(procCodesFromDb).orElseGet(Collections::emptyList).stream()
+                    .filter(dataFromDB -> (
+                            dataFromDB.getProcedureCode().intValue() == dataFromFile.getProcedureCode().intValue()
                     )).findAny();
 
             // Output record from existing input record
@@ -229,7 +236,7 @@ public class ProcedureCodeProcessorService {
 
                 // update existing amount from input record and end date to today's date
                 outputProcCodeRecordFromDB.setEndDate(today);
-
+                outputProcCodeRecordFromDB.setModifier(outputProcCodeRecordFromFile.getModifier());
                 // update dates for input record, effective data s today and end date as infinite date
                 outputProcCodeRecordFromFile.setEffectiveDate(today);
                 outputProcCodeRecordFromFile.setEndDate(infiniteDate);
