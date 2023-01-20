@@ -4,9 +4,12 @@ import com.rajesh.files.fileprocessor.domain.ProcedureCodeData;
 import com.rajesh.files.fileprocessor.domain.ProcessStatus;
 import com.rajesh.files.fileprocessor.exception.*;
 import com.rajesh.files.fileprocessor.repository.ProcedureCodeDataRepository;
+import com.rajesh.files.fileprocessor.repository.ProcedureCodeRowMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.type.IntegerType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 
@@ -42,6 +45,9 @@ public class ProcedureCodeProcessorService {
     private String outputFileLocation;
     @Value("${input.file.batch.size:999}")
     private int batchSize;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     /**
      * Process the procedure data and generate the data file
@@ -189,7 +195,8 @@ public class ProcedureCodeProcessorService {
                 .collect(Collectors.toList());
         //System.out.println("inputProcCodes : " + inputProcCodes);
         // Get proc code data for given proc codes from database
-        List<ProcedureCodeData> procCodesFromDb = repository.findByProcedureCodeIn(inputProcCodes);
+        //List<ProcedureCodeData> procCodesFromDb = repository.findByProcedureCodeIn(inputProcCodes);
+        List<ProcedureCodeData> procCodesFromDb = findAllProcedureCodes(inputProcCodeRecords);
         System.out.println("Db count : " + procCodesFromDb.size());
         // Derive output proc code records from input and existing proc code records
         inputProcCodeRecords.stream().forEach(dataFromFile -> {
@@ -259,4 +266,25 @@ public class ProcedureCodeProcessorService {
 
     }
 
+    private List<ProcedureCodeData> findAllProcedureCodes(List<ProcedureCodeData> inputProcCodeRecords) {
+        String sql = "SELECT * FROM FAC_MSA WHERE (GEOGRAPHY_ID, PROC_CODE, ACTUAL_DERIVED_IND, GEOGRAPHIC_LEVEL) IN ";
+        //String sql = "SELECT * FROM FAC_MSA WHERE (PROC_CODE, ACTUAL_DERIVED_IND) IN ";
+        String inClause = "";
+        for (ProcedureCodeData procedureCodeData : inputProcCodeRecords) {
+            String singleInClause = "(" + procedureCodeData.getGeographyId() + "," + procedureCodeData.getProcedureCode() + ",'" + procedureCodeData.getActualDerivedIndicator() +"','" + procedureCodeData.getGeographicLevel() +"')";
+            //String singleInClause = "(" + procedureCodeData.getProcedureCode() + ",'" + procedureCodeData.getActualDerivedIndicator() +"')";
+            if (StringUtils.isBlank(inClause)) {
+                inClause = "(" + singleInClause;
+            } else {
+                inClause = inClause + "," + singleInClause;
+            }
+        }
+        if (!StringUtils.isBlank(inClause)) {
+            inClause = inClause + ")";
+        }
+
+        sql = sql + inClause;
+        List<ProcedureCodeData> data= jdbcTemplate.query(sql, new ProcedureCodeRowMapper());
+        return data;
+    }
 }
